@@ -1,0 +1,59 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:1:1-26:12
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:1:1-26:12
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:1:1-26:12
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:1:1-26:12
+	package
+		INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:1:11-69
+application
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:3:5-24:19
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:3:5-24:19
+	android:extractNativeLibs
+		INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+	android:label
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:3:18-51
+activity#com.example.blecall.MainActivity
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:4:9-13:20
+	android:exported
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:6:13-36
+	android:name
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:5:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:8:13-11:29
+action#android.intent.action.MAIN
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:9:17-68
+	android:name
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:9:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:10:17-76
+	android:name
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:10:27-74
+service#com.example.blecall.CallNotificationService
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:14:1-23:11
+	android:exported
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:17:5-28
+	android:permission
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:16:5-79
+	android:name
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:15:5-44
+intent-filter#action:name:android.service.notification.NotificationListenerService
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:19:5-21:21
+action#android.service.notification.NotificationListenerService
+ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:20:9-90
+	android:name
+		ADDED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml:20:17-88
+uses-sdk
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /workspaces/BLE-Call-Notifier/app/src/main/AndroidManifest.xml
