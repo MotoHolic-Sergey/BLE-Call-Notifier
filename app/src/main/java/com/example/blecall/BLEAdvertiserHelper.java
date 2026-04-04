@@ -5,13 +5,14 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseCallback;
+import android.content.Context;
 
 public class BLEAdvertiserHelper {
 
     private static BluetoothLeAdvertiser advertiser;
     private static AdvertiseCallback callback;
 
-    public static void start(String message) {
+    public static void start(Context context, byte[] payload) {
 
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter == null || !adapter.isEnabled()) return;
@@ -19,27 +20,21 @@ public class BLEAdvertiserHelper {
         advertiser = adapter.getBluetoothLeAdvertiser();
         if (advertiser == null) return;
 
-        byte[] data = message.getBytes();
-
-        // Truncate to 20 bytes
-        if (data.length > 20) {
-            byte[] truncated = new byte[20];
-            System.arraycopy(data, 0, truncated, 0, 20);
-            data = truncated;
-        }
+        // ✅ THIS is the important line (uses saved channel)
+        int manufacturerId = AppSettings.getManufacturerId(context);
 
         AdvertiseSettings settings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
                 .setConnectable(false)
                 .build();
 
-        AdvertiseData advertiseData = new AdvertiseData.Builder()
-                .addManufacturerData(0x1234, data)
+        AdvertiseData data = new AdvertiseData.Builder()
+                .addManufacturerData(manufacturerId, payload)
                 .build();
 
         callback = new AdvertiseCallback() {};
 
-        advertiser.startAdvertising(settings, advertiseData, callback);
+        advertiser.startAdvertising(settings, data, callback);
     }
 
     public static void stop() {
