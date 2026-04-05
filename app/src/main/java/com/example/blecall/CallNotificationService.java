@@ -93,7 +93,10 @@ public class CallNotificationService extends NotificationListenerService {
         System.arraycopy(nameBytes, 0, payload, 1, len);
 
         // Step 7: Manufacturer ID (channel 1 default)
-        int channel = 1; // you can later link this to SharedPreferences
+        android.content.SharedPreferences prefs =
+        getSharedPreferences("ble_settings", MODE_PRIVATE);
+
+int channel = prefs.getInt("channel", 1);
         int manufacturerId = 0x1200 | channel;
 
         // ✅ NEW: Send via BLE (controlled + auto-stop)
