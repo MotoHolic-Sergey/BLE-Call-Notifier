@@ -5,6 +5,7 @@ import android.service.notification.StatusBarNotification;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.content.Intent;
 
 import java.nio.charset.StandardCharsets;
 
@@ -14,6 +15,15 @@ public class CallNotificationService extends NotificationListenerService {
 
     private static long lastSentTime = 0;
     private static String lastPayloadKey = "";
+
+    // ✅ NEW: BLE manager
+    private BleAdvertiserManager bleManager;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        bleManager = new BleAdvertiserManager(this);
+    }
 
     @Override
     public void onListenerConnected() {
@@ -82,8 +92,12 @@ public class CallNotificationService extends NotificationListenerService {
         payload[0] = type;
         System.arraycopy(nameBytes, 0, payload, 1, len);
 
-        // Step 7: Send via BLE
-        BLEAdvertiserHelper.start(getApplicationContext(), payload);
+        // Step 7: Manufacturer ID (channel 1 default)
+        int channel = 1; // you can later link this to SharedPreferences
+        int manufacturerId = 0x1200 | channel;
+
+        // ✅ NEW: Send via BLE (controlled + auto-stop)
+        bleManager.advertise(payload, manufacturerId);
 
         // Step 8: Logging
         String log = "TIME: " + now +
@@ -95,6 +109,23 @@ public class CallNotificationService extends NotificationListenerService {
 
         handler.post(() -> MainActivity.appendLog(log));
         FileLogger.log(log);
+    }
+
+    // ✅ SAFETY: stop BLE when service is killed
+    @Override
+    public void onDestroy() {
+        if (bleManager != null) {
+            bleManager.shutdown();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        if (bleManager != null) {
+            bleManager.shutdown();
+        }
+        super.onTaskRemoved(rootIntent);
     }
 
     // -----------------------
@@ -113,14 +144,12 @@ public class CallNotificationService extends NotificationListenerService {
             result = normalizeName(raw);
         }
 
-        // Trim AFTER normalization
         result = result.trim();
 
         if (result.isEmpty()) {
             return "UNKNOWN";
         }
 
-        // Truncate to 17 chars
         if (result.length() > 17) {
             result = result.substring(0, 17);
         }
