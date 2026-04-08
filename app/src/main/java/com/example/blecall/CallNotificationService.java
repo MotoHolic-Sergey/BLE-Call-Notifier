@@ -16,8 +16,9 @@ public class CallNotificationService extends NotificationListenerService {
     private static long lastSentTime = 0;
     private static String lastPayloadKey = "";
 
-    // ✅ NEW: BLE manager
     private BleAdvertiserManager bleManager;
+
+    private static final int MAX_DISPLAY_LEN = 13;
 
     @Override
     public void onCreate() {
@@ -52,19 +53,64 @@ public class CallNotificationService extends NotificationListenerService {
             return;
         }
 
-        // Step 2: Incoming call filter
-        if (!(textLower.contains("incoming") && textLower.contains("call"))) {
-            return;
-        }
+        // -------------------------
+        // NEW: Call vs Message logic
+        // -------------------------
+        boolean isIncomingCall = textLower.contains("incoming") && textLower.contains("call");
 
-        // Step 3: Determine type
+        boolean isOngoingOrMissed =
+                textLower.contains("ongoing") ||
+                textLower.contains("missed");
+
+        boolean isMessage = !isIncomingCall && !isOngoingOrMissed;
+
+        // -------------------------
+        // NEW: Load priority contacts
+        // -------------------------
+        android.content.SharedPreferences prefs =
+                getSharedPreferences("ble_settings", MODE_PRIVATE);
+
+        String p1 = prefs.getString("priority_contact_1", "").toLowerCase();
+        String p2 = prefs.getString("priority_contact_2", "").toLowerCase();
+        String p3 = prefs.getString("priority_contact_3", "").toLowerCase();
+
+        String senderRaw = title == null ? "" : title;
+        String sender = normalizeName(senderRaw).toLowerCase();
+
+        boolean hasPriority =
+                (!p1.isEmpty() && sender.contains(p1)) ||
+                (!p2.isEmpty() && sender.contains(p2)) ||
+                (!p3.isEmpty() && sender.contains(p3));
+
+        // -------------------------
+        // NEW: Type selection
+        // -------------------------
         byte type;
-        if (pkg.contains("dialer")) {
-            type = 0x00;
-        } else if (pkg.contains("telegram")) {
-            type = 0x01;
-        } else if (pkg.contains("whatsapp")) {
-            type = 0x02;
+
+        if (isIncomingCall) {
+
+            if (pkg.contains("dialer")) {
+                type = 0x00;
+            } else if (pkg.contains("telegram")) {
+                type = 0x01;
+            } else if (pkg.contains("whatsapp")) {
+                type = 0x02;
+            } else {
+                return;
+            }
+
+        } else if (isMessage && hasPriority) {
+
+            if (pkg.contains("dialer")) {
+                type = 0x10;
+            } else if (pkg.contains("telegram")) {
+                type = 0x11;
+            } else if (pkg.contains("whatsapp")) {
+                type = 0x12;
+            } else {
+                return;
+            }
+
         } else {
             return;
         }
@@ -72,7 +118,7 @@ public class CallNotificationService extends NotificationListenerService {
         // Step 4: Extract caller
         String caller = processCaller(title);
 
-        // Step 5: Deduplication
+        // Step 5: Deduplication (unchanged, works for messages too)
         long now = System.currentTimeMillis();
         String payloadKey = type + "|" + caller;
 
@@ -92,14 +138,10 @@ public class CallNotificationService extends NotificationListenerService {
         payload[0] = type;
         System.arraycopy(nameBytes, 0, payload, 1, len);
 
-        // Step 7: Manufacturer ID (channel 1 default)
-        android.content.SharedPreferences prefs =
-        getSharedPreferences("ble_settings", MODE_PRIVATE);
-
-int channel = prefs.getInt("channel", 1);
+        // Step 7: Manufacturer ID
+        int channel = prefs.getInt("channel", 1);
         int manufacturerId = 0x1200 | channel;
 
-        // ✅ NEW: Send via BLE (controlled + auto-stop)
         bleManager.advertise(payload, manufacturerId);
 
         // Step 8: Logging
@@ -114,7 +156,6 @@ int channel = prefs.getInt("channel", 1);
         FileLogger.log(log);
     }
 
-    // ✅ SAFETY: stop BLE when service is killed
     @Override
     public void onDestroy() {
         if (bleManager != null) {
@@ -132,16 +173,16 @@ int channel = prefs.getInt("channel", 1);
     }
 
     // -----------------------
-    // Caller Processing Logic
+    // UPDATED Caller Processing
     // -----------------------
-
     private String processCaller(String raw) {
 
         if (raw == null || raw.isEmpty()) return "UNKNOWN";
 
         String result;
+        boolean isPhone = isPhoneNumber(raw);
 
-        if (isPhoneNumber(raw)) {
+        if (isPhone) {
             result = normalizePhone(raw);
         } else {
             result = normalizeName(raw);
@@ -153,8 +194,9 @@ int channel = prefs.getInt("channel", 1);
             return "UNKNOWN";
         }
 
-        if (result.length() > 17) {
-            result = result.substring(0, 17);
+        // 🔧 NEW: truncate ONLY names
+        if (!isPhone && result.length() > MAX_DISPLAY_LEN) {
+            result = result.substring(0, MAX_DISPLAY_LEN - 1) + "…";
         }
 
         return result;
@@ -185,8 +227,6 @@ int channel = prefs.getInt("channel", 1);
         if (input == null) return "";
 
         String name = input.trim();
-
-        // Keep ASCII only
         name = name.replaceAll("[^\\x20-\\x7E]", "");
 
         return name;

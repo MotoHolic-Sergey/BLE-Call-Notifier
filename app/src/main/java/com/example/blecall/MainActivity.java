@@ -6,6 +6,7 @@ import android.widget.*;
 import android.view.ViewGroup;
 import android.content.Intent;
 import android.provider.Settings;
+import android.content.SharedPreferences;
 
 public class MainActivity extends Activity {
 
@@ -18,7 +19,6 @@ public class MainActivity extends Activity {
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        // Notification access button
         Button notifBtn = new Button(this);
         notifBtn.setText("Enable Notification Access");
         notifBtn.setOnClickListener(v -> {
@@ -26,16 +26,13 @@ public class MainActivity extends Activity {
             startActivity(intent);
         });
 
-        // Channel input
         EditText channelInput = new EditText(this);
         channelInput.setHint("Enter channel (1-8)");
         channelInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
 
-        // Current channel display
         TextView current = new TextView(this);
         current.setText("Current Channel: " + AppSettings.getChannel(this));
 
-        // Set button
         Button setBtn = new Button(this);
         setBtn.setText("Set Channel");
 
@@ -55,7 +52,34 @@ public class MainActivity extends Activity {
             }
         });
 
-        // Log view
+        // -------------------------
+        // NEW: Priority contacts UI
+        // -------------------------
+        EditText p1 = new EditText(this);
+        p1.setHint("Priority Contact 1");
+
+        EditText p2 = new EditText(this);
+        p2.setHint("Priority Contact 2");
+
+        EditText p3 = new EditText(this);
+        p3.setHint("Priority Contact 3");
+
+        Button saveBtn = new Button(this);
+        saveBtn.setText("Save Priority Contacts");
+
+        saveBtn.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("ble_settings", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            editor.putString("priority_contact_1", p1.getText().toString().trim());
+            editor.putString("priority_contact_2", p2.getText().toString().trim());
+            editor.putString("priority_contact_3", p3.getText().toString().trim());
+
+            editor.apply();
+
+            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
+        });
+
         logView = new TextView(this);
         logView.setTextSize(12);
 
@@ -66,6 +90,13 @@ public class MainActivity extends Activity {
         layout.addView(channelInput);
         layout.addView(setBtn);
         layout.addView(current);
+
+        // NEW UI elements
+        layout.addView(p1);
+        layout.addView(p2);
+        layout.addView(p3);
+        layout.addView(saveBtn);
+
         layout.addView(scroll, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 0,
